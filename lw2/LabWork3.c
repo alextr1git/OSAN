@@ -11,6 +11,7 @@ void add_path(const char *file_path, int size);
 
 typedef char Path[PATH_MAX]; //Path is array of chars size =4096
 int *sizearr;
+char lineout[100];
 int counter = 0;
 Path *file_paths;
 FILE *outputfile;
@@ -20,6 +21,7 @@ const int file_path_delta = 10;
 
 int main(int argc, char const *argv[])
 {
+snprintf(lineout, 1000, "%s%s", argv[0], argv[1]); 
     if(argc != 5){ //script dir min max output.txt
         fprintf(stderr, "Invalid arguments.\n");
         fprintf(stderr, "Correct format is: script dir min max output.txt\n");
@@ -29,7 +31,7 @@ int main(int argc, char const *argv[])
     int min_size = strtol(argv[2], NULL, 10); // transfer string to long int basis=10
     int max_size = strtol(argv[3], NULL, 10);
     outputfile = fopen(argv[4],"w");
-     if (!outputfile) 
+     if (!outputfile)
    {
     perror("Cannot open a file"); //print error to the error stream with string before all
     return 1;
@@ -47,7 +49,8 @@ int main(int argc, char const *argv[])
     sizearr = (int*)malloc(file_path_delta * sizeof(int));
     
     if(!file_paths){
-        perror("malloc error occured"); //print error to the error stream with string before all
+       // perror(""); //print error to the error stream with string before all
+        fprintf(stderr," %s/%s: malloc error occured\n",argv[0],argv[1]);
         return 1;
     }
 
@@ -87,7 +90,8 @@ void add_path(const char *file_path, int size){
 int check_directory(char const *dir_name, int min_size, int max_size){
     DIR *current_dir = opendir(dir_name); //cur_dir - pointer to oped dir of out dir_name
     if(!current_dir){ 
-       fprintf(stderr, "Opendir error occured: %s \n", dir_name);
+      //printf(stderr, "Opendir error occured: %s \n", dir_name);
+       fprintf(stderr, "%s: malloc error occured\n", lineout);
         return 1;
     }
 
@@ -98,7 +102,7 @@ int check_directory(char const *dir_name, int min_size, int max_size){
     {
 		if (0 != errno)
 	    {
-	     perror("Readdir error occured");
+	printf("%s", lineout);
 	     errno = 0;      
 	    }	    
 	     //while exist files in catalog
