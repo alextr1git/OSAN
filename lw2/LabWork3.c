@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
 {
 snprintf(lineout, 1000, "%s%s", argv[0], argv[1]); 
     if(argc != 5){ //script dir min max output.txt
-        fprintf(stderr, "Invalid arguments.\n");
+        fprintf(stderr, "%s: Invalid arguments.\n", lineout);
         fprintf(stderr, "Correct format is: script dir min max output.txt\n");
         return 1;
     }
@@ -33,24 +33,24 @@ snprintf(lineout, 1000, "%s%s", argv[0], argv[1]);
     outputfile = fopen(argv[4],"w");
      if (!outputfile)
    {
-    perror("Cannot open a file"); //print error to the error stream with string before all
+     fprintf(stderr, "%s: Cannot open the file %s\n", lineout, argv[4]);//print error to the error stream with string before all
     return 1;
    }
     if(min_size < 0 || max_size < 0){
-        fprintf(stderr, "Size cannot be less than 0 bytes!\n");
+        fprintf(stderr, "%s: Size cannot be less than 0 bytes!\n", lineout);
         return 1;
     }
 
     if(min_size > max_size){
-        fprintf(stderr, "Max size cannot be lesser then min size");
+           fprintf(stderr, "%s: Max size cannot be lesser then min size\n", lineout);
     }
 
     file_paths = malloc(sizeof(Path) * file_path_delta);
     sizearr = (int*)malloc(file_path_delta * sizeof(int));
     
     if(!file_paths){
-       // perror(""); //print error to the error stream with string before all
-        fprintf(stderr," %s/%s: malloc error occured\n",argv[0],argv[1]);
+       
+           fprintf(stderr, "%s: malloc error occured\n", lineout);
         return 1;
     }
 
@@ -76,7 +76,7 @@ void add_path(const char *file_path, int size){
         file_paths = realloc(file_paths, sizeof(Path) * file_paths_max_count);
         sizearr = (int*)realloc(sizearr, file_paths_max_count * sizeof(int));
         if((!file_paths) || (!sizearr)){
-            perror("realloc error occured");
+             fprintf(stderr, "%s: realloc error occured\n", lineout);
             file_paths_max_count -= file_path_delta;
             return;
         }
@@ -91,22 +91,22 @@ int check_directory(char const *dir_name, int min_size, int max_size){
     DIR *current_dir = opendir(dir_name); //cur_dir - pointer to oped dir of out dir_name
     if(!current_dir){ 
       //printf(stderr, "Opendir error occured: %s \n", dir_name);
-       fprintf(stderr, "%s: malloc error occured\n", lineout);
+       fprintf(stderr, "%s: Cannot open dir: %s\n", lineout, dir_name);
         return 1;
     }
 
     struct dirent *d;
     errno = 0; 
 
-    while((d = readdir(current_dir)))
+    while((d = readdir(current_dir)) || errno != 0)
     {
 		if (0 != errno)
 	    {
-	printf("%s", lineout);
-	     errno = 0;      
+	printf("%s: Readdir error occured: %s\n", lineout, d->d_name);
+	    errno = 0;      
+
 	    }	    
 	     //while exist files in catalog
-
 		Path filepath;
 		sprintf(filepath, "%s/%s", dir_name, d->d_name); //output to our char array with formating ourdirectory/innerfile
 	     	      
@@ -133,7 +133,7 @@ int check_directory(char const *dir_name, int min_size, int max_size){
 
    	 if(closedir(current_dir))
  	   {
-      	     perror("closedir error occured");
+      	     fprintf(stderr, "%s: Closedir error occured: %s\n", lineout, dir_name);
       	     return 1;
    	    }
     
